@@ -195,3 +195,5 @@ print("Cipher:", bits_to_hex(cipher))
 
 decrypted = des_decrypt_block(cipher, key)
 print("Decrypted:", bits_to_hex(decrypted))
+
+print("Key:", key)

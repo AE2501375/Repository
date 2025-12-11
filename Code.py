@@ -79,9 +79,13 @@ S = [
 
 def permute(block, table):
     return [block[i-1] for i in table]
+#Takes a list of bits
+#Rearranges them according to a permutation table.
 
 def left_shift(bits, n):
     return bits[n:] + bits[:n]
+#Rotates the list left by n positions.
+#Used to rotate C and D in the key schedule.
 
 def sbox_substitution(bits):
     output = []
@@ -92,6 +96,12 @@ def sbox_substitution(bits):
         val = S[i][row][col]
         output += [int(x) for x in f"{val:04b}"]
     return output
+#Splits the 48-bit input into 8 chunks of 6 bits.
+#For each 6-bit chunk:
+#row comes from first and last bit.
+#col comes from the middle 4 bits.
+#Looks up S-box value.
+#Converts S-box output to 4 binary bits and adds to output.
 
 def des_round(L, R, key):
     expanded = permute(R, E)
@@ -100,6 +110,12 @@ def des_round(L, R, key):
     permuted = permute(sboxed, P)
     new_R = [a ^ b for a, b in zip(L, permuted)]
     return R, new_R
+#Expand R from 32 to 48 bits using table E.
+#XOR the expanded R with the round key.
+#Pass through S-boxes to go 48 to 32 bits.
+#Apply permutation P.
+#XOR this result with L to becomes the new R.
+#Return (old R becomes new L, new_R becomes new R).
 
 def generate_keys(key64):
     key = permute(key64, PC1)
@@ -113,6 +129,13 @@ def generate_keys(key64):
         keys.append(permute(C + D, PC2))
 
     return keys
+#Apply PC-1 table to compress 64-bit key to 56 bits.
+#Split into C and D halves (28 bits each).
+#For each of the 16 rounds:
+#Left-shift C and D.
+#Combine them.
+#Apply PC-2 to get a 48-bit round key.
+#Return list of 16 round keys.
 
 def des_encrypt_block(plaintext64, key64):
     block = permute(plaintext64, IP)
@@ -126,6 +149,14 @@ def des_encrypt_block(plaintext64, key64):
     combined = R + L
     return permute(combined, FP)
 
+#Initial Permutation (IP).
+#Split into L and R (first 32 bits + last 32 bits).
+#Generate round keys.
+#Run 16 rounds.
+#Swap L and R (Feistel rule).
+#Apply Final Permutation (FP).
+#Return encrypted 64-bit block.
+
 def des_decrypt_block(ciphertext64, key64):
     block = permute(ciphertext64, IP)
     L = block[:32]
@@ -137,12 +168,20 @@ def des_decrypt_block(ciphertext64, key64):
 
     combined = R + L
     return permute(combined, FP)
+#Same as encryption but keys are reversed.
 
 def hex_to_bits(h):
     return [int(b) for b in bin(int(h,16))[2:].zfill(64)]
+#Takes a hex string.
+#Converts it to binary.
+#Pads it to 64 bits.
+#Returns list of 0/1 bits.
 
 def bits_to_hex(b):
     return hex(int("".join(str(x) for x in b), 2))[2:].upper()
+#Turns list of bits into a string.
+#Converts binary → hex.
+#Removes "0x" and uppercases it.
 
 # A standard DES test vector:
 # •	Key: 133457799BBCDFF1
